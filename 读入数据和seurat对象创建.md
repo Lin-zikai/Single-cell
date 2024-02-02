@@ -1,5 +1,4 @@
-## 我们在这个时间点对Python处理单细胞，例如scanpy包不是很熟悉，所以下面的单细胞教程都是基于Linux或Seruat包进行，大佬们驻足
-## 请原谅我们是群菜鸡  我们部分参考的是 https://zhuanlan.zhihu.com/p/647580359
+## 我们在这个时间点对Python处理单细胞，例如scanpy包不是很熟悉，所以下面的单细胞教程都是基于Linux或Seruat包进行，大佬们驻足请原谅我们是群菜鸡  我们部分参考的是 https://zhuanlan.zhihu.com/p/647580359
 
 
 ```
