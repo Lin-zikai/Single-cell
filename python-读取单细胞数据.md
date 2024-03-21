@@ -43,3 +43,11 @@ adata.write(filename='data/SRR21407772.h5ad')
 #我猜是这行代码导致数据出现负值，建议不要运行
 #sc.pp.log1p(adata)
 ```
+
+
+> [!IMPORTANT]
+> 看到这里我都嫌烦，其实scanpy直接读就行了，cellranger输出文件夹，outs/counts里面有一个filtered_feature_bc_matrix.h5,直接读就行了
+```python
+import scanpy as sc
+adata=  sc.read_10x_h5('/GPUFS/gyfyy_jxhe_1/User/zyt/HTAN/HTAPP/HTAPP_multi_sample/outs/count/filtered_feature_bc_matrix.h5')
+```
