@@ -39,6 +39,12 @@ install.packages("~/R/scPagwas_1.3.0.tar.gz", repos = NULL, type = "source", lib
 装好后就可以啦
 
 # 运行scpagwas
+在运行之前，要记得先把Idents赋值给Seurat对象在保存为rds，例如
+``` R
+seuratobject<-readRDS("seuratobject.rds")
+Idents(seuratobject)<-seuratobject@meta.data$Cell_type
+saveRDS(seuratobject,"Epithelial.rds")
+```
 
 以下是我写的示例文件，叫scpagwas.r
 ``` R
