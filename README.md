@@ -1,2 +1,2 @@
-# R-singlecell
-记录r语言单细胞学习
+# Singlecell
+记录单细胞学习
