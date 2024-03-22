@@ -149,7 +149,7 @@ new_model = celltypist.train(lung_adenocarcinoma_cells, labels = 'cell_type', n_
 
 new_model.write('/GPUFS/gyfyy_jxhe_1/.celltypist/data/models/lung_adenocarcinoma.pkl') ## 输出pkl
 
-new_model = models.Model.load('celltypist_demo_folder/lung_adenocarcinoma.pkl')   ## 载入pkl使用
+new_model = models.Model.load('/GPUFS/gyfyy_jxhe_1/.celltypist/data/models/lung_adenocarcinoma.pkl')   ## 载入pkl使用
 
 ### 后面就和之前一样了随便、读一份数据
 
