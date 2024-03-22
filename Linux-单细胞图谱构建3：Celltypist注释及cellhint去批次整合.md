@@ -65,6 +65,29 @@ predictions = celltypist.annotate(adata1, model = 'Immune_All_High.pkl', majorit
 pd.crosstab(adata.obs.cell_type, adata.obs.majority_voting).loc[['Microglia','Macro_pDC']]或自己发现是，Microglia由几种其他细胞组成，或macrophage实际上是pDC细胞，这是由于单匹配一对一选择最优分类导致的，这时打开mode = 'prob match'，Microglia会识别为unassigned，不知道什么类型，macrophage自动调整为pDC。
 我个人认为对于新的数据集还是不要打开吧，选择最优注释。
 
+>  [!Caution]
+> 有一点要注意的是，注意adata.var_name，及基因名是ENSEMBL还是SYMBOL的，要与model中的feature格式对应，我给出转换代码（假设model中是ENSEMBL格式，adata1中是SYMBOL）
+``` python
+import mygene  #没有就conda装一下
+mg = mygene.MyGeneInfo()
+
+gene_symbols = adata1.var_names.tolist()
+
+query_results = mg.querymany(gene_symbols, scopes='symbol', fields='ensembl.gene', species='human')
+
+symbol_to_ensembl = {}
+for result in query_results:
+    if 'ensembl' in result:
+        ensembl_info = result['ensembl']
+        if isinstance(ensembl_info, list):
+            ensembl_id = ensembl_info[0].get('gene')
+        else:
+            ensembl_id = ensembl_info.get('gene')
+        if ensembl_id:
+            symbol_to_ensembl[result['query']] = ensembl_id
+adata1.var_names = [symbol_to_ensembl.get(gene, gene) for gene in adata1.var_names]
+```
+
 ### 给原本的adata添加注释结果
 ``` python
 adata1 = predictions.to_adata()
