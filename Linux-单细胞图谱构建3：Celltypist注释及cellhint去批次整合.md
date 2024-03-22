@@ -147,7 +147,7 @@ sc.pp.log1p(lung_adenocarcinoma_cells)
 
 new_model = celltypist.train(lung_adenocarcinoma_cells, labels = 'cell_type', n_jobs = 10, feature_selection = True) ## 训练
 
-new_model.write('celltypist_demo_folder/lung_adenocarcinoma.pkl')  ## 输出pkl
+new_model.write('/GPUFS/gyfyy_jxhe_1/.celltypist/data/models/lung_adenocarcinoma.pkl') ## 输出pkl
 
 new_model = models.Model.load('celltypist_demo_folder/lung_adenocarcinoma.pkl')   ## 载入pkl使用
 
