@@ -136,14 +136,20 @@ celltypist.dotplot(predictions, use_as_reference = 'cell_type', use_as_predictio
 
 ## 根据自己已分好群的细胞来构建pkl，给新的数据分类(可以自己找一个权威研究构建pkl，给现在的数据分群）
 ## 实际上是一个 读人家的数据——训练——输出模型——载入模型——预测的过程，人家开发的真的很好
+## 这里我提取了肺疾病图谱
 ``` python
 adata_2000 = sc.read('celltypist_demo_folder/demo_2000_cells.h5ad', backup_url = 'https://celltypist.cog.sanger.ac.uk/Notebook_demo_data/demo_2000_cells.h5ad') ## 别人的研究
 
-new_model = celltypist.train(adata_2000, labels = 'cell_type', n_jobs = 10, feature_selection = True)  ## 训练
+lung_adenocarcinoma_cells = adata[adata.obs['disease'] == 'lung adenocarcinoma']
 
-new_model.write('celltypist_demo_folder/model_from_immune2000.pkl')  ## 输出pkl
+sc.pp.normalize_total(lung_adenocarcinoma_cells, target_sum=1e4)
+sc.pp.log1p(lung_adenocarcinoma_cells)
 
-new_model = models.Model.load('celltypist_demo_folder/model_from_immune2000.pkl')   ## 载入pkl使用
+new_model = celltypist.train(lung_adenocarcinoma_cells, labels = 'cell_type', n_jobs = 10, feature_selection = True) ## 训练
+
+new_model.write('celltypist_demo_folder/lung_adenocarcinoma.pkl')  ## 输出pkl
+
+new_model = models.Model.load('celltypist_demo_folder/lung_adenocarcinoma.pkl')   ## 载入pkl使用
 
 ### 后面就和之前一样了随便、读一份数据
 
