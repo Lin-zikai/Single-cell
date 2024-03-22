@@ -178,7 +178,7 @@ new_model = models.Model.load('/GPUFS/gyfyy_jxhe_1/.celltypist/data/models/lung_
 
 adata1=  sc.read_10x_h5('/GPUFS/gyfyy_jxhe_1/User/zyt/HTAN/HTAPP/HTAPP_multi_sample/outs/count/filtered_feature_bc_matrix.h5')
 
-predictions = celltypist.annotate(adata1, model = 'celltypist_demo_folder/model_from_immune2000.pkl', majority_voting = True)
+predictions = celltypist.annotate(adata1, model = '/GPUFS/gyfyy_jxhe_1/.celltypist/data/models/lung_adenocarcinoma.pkl', majority_voting = True)
 
 adata1 = predictions.to_adata()
 
