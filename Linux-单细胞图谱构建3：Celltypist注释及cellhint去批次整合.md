@@ -130,10 +130,6 @@ def remove_batch_suffix(name):
 adata.obs_names = [remove_batch_suffix(name) for name in adata.obs_names]
 ```
 
-### 这时候考虑去除adata.obs.name中两个研究重复的标签
-``` python
-adata = adata[~duplicates].copy()
-```
 
 > [!TIPS]
 > 如果你想的话，可以筛选掉那些celltypist自动注释的只有1个或者少数几个的数量很少的细胞（怀疑是注释的假阳性），当然你也可以先在adata1和adata2筛选完再合并
