@@ -40,4 +40,24 @@ use_condaenv("cytoTRACE", required = TRUE)
 ```
 
 
+## 读数据，提取表达矩阵，运行（我的数据大概有9万个细胞，起码运行了几个小时）
+``` R
+a<-readRDS("/GPUFS/gyfyy_jxhe_1/User/zyt/scPagwas/scPagwas_lc/merge_seurat_lc.rds")
+exp1 <- as.matrix(a@assays$RNA@counts)
+exp1 <- exp1[apply(exp1 > 0,1,sum) >= 5,]
+results <- CytoTRACE(exp1,ncores = 10)  ##核数根据自己的情况调
+phenot <- a$cell_type
+phenot <- as.character(phenot)
+names(phenot) <- rownames(a@meta.data)
+emb <- a@reductions[["umap"]]@cell.embeddings
+plotCytoTRACE(results, phenotype = phenot, emb = emb, outputDir = './')
+plotCytoGenes(results, numOfGenes = 30, outputDir = './')
+```
+
+
+
+
+
+
+
 
