@@ -1,4 +1,4 @@
-# 这里续上多样本cellranger的结果，通过整合人类肿瘤图谱上的2个中心的肺癌单细胞数据，来整合一个大型图谱
+# 这里续上多样本cellranger的结果，通过整合人类肿瘤图谱上的3个中心的肺癌单细胞数据，来整合一个大型图谱
 # 主要包含注释和去批次两大步骤，多个研究以此类推整合
 
 ## CellTypist对每个cellranger aggr整合好的文件进行注释 （https://colab.research.google.com/github/Teichlab/celltypist/blob/main/docs/notebook/celltypist_tutorial.ipynb#scrollTo=sharing-router）
@@ -23,16 +23,17 @@ models.download_models(force_update = True)，存储在models.models_path里面
 
 models.models_description() 查看介绍，也在https://www.celltypist.org/models
 
-##以Immune_All_Low为例注释未分类的数据集
-model = models.Model.load(model = 'Immune_All_High.pkl')
+##以自己注释的lung_adenocarcinoma_2.pkl为例注释未分类的数据集
+model = models.Model.load(model = 'lung_adenocarcinoma_2.pkl')
 model.cell_types  #查看细胞类型
 ```
 
 ### 读入数据和必要流程
 
 ```python
-adata1=  sc.read_10x_h5('/GPUFS/gyfyy_jxhe_1/User/zyt/HTAN/HTAPP/HTAPP_multi_sample/outs/count/filtered_feature_bc_matrix.h5')
-adata2 = sc.read_10x_h5('/GPUFS/gyfyy_jxhe_1/User/zyt/HTAN/HTABU/HTABU_multi_sample/outs/count/filtered_feature_bc_matrix.h5')
+adata1=  sc.read_10x_h5('/GPUFS/gyfyy_jxhe_1/User/zyt/HTAN/cellhint/HTAPP_filtered_feature_bc_matrix.h5')
+adata2 = sc.read_10x_h5('/GPUFS/gyfyy_jxhe_1/User/zyt/HTAN/cellhint/HTABU_filtered_feature_bc_matrix.h5')
+adata3 = sc.read_10x_h5('/GPUFS/gyfyy_jxhe_1/User/zyt/HTAN/cellhint/HTAMSK_filtered_feature_bc_matrix.h5')
 ```
 
 > [!Caution]
@@ -40,6 +41,7 @@ adata2 = sc.read_10x_h5('/GPUFS/gyfyy_jxhe_1/User/zyt/HTAN/HTABU/HTABU_multi_sam
 ``` python
 del adata1.raw
 del adata2.raw
+del adata3.raw
 ```
 > [!Caution]
 > 注意单细胞文件要被sc.pp.normalize_total和sc.pp.log1p，并且adata.X不能有NA值
@@ -48,6 +50,8 @@ sc.pp.normalize_total(adata1, target_sum=1e4)
 sc.pp.log1p(adata1)
 sc.pp.normalize_total(adata2, target_sum=1e4)
 sc.pp.log1p(adata2)
+sc.pp.normalize_total(adata3, target_sum=1e4)
+sc.pp.log1p(adata3)
 ```
 #### 跑到这里这两个anndata的格式应该如下
 #### AnnData object with n_obs × n_vars = 122700 × 36601
@@ -56,7 +60,7 @@ sc.pp.log1p(adata2)
 
 ### 根据Immune.All.High.pks进行预测细胞类型
 ``` python
-predictions = celltypist.annotate(adata1, model = 'Immune_All_High.pkl', majority_voting = True, mode = 'best match')
+predictions = celltypist.annotate(adata1, model = 'lung_adenocarcinoma_2.pkl', majority_voting = True, mode = 'best match')
 ```
 > [!IMPORTANT]
 > 跑的时候会给你自动创造neighbor
@@ -93,8 +97,10 @@ adata1.var_names = [symbol_to_ensembl.get(gene, gene) for gene in adata1.var_nam
 adata1 = predictions.to_adata()
 
 #adata2也同样操作
-predictions = celltypist.annotate(adata2, model = 'Immune_All_High.pkl', majority_voting = True, mode = 'best match')
+predictions = celltypist.annotate(adata2, model = 'lung_adenocarcinoma_2.pkl', majority_voting = True, mode = 'best match')
 adata2 = predictions.to_adata()
+predictions = celltypist.annotate(adata3, model = 'lung_adenocarcinoma_2.pkl', majority_voting = True, mode = 'best match')
+adata3 = predictions.to_adata()
 ```
 
 #### 这时候adata.obs就多了刚刚那三列。
@@ -113,8 +119,10 @@ adata2 = predictions.to_adata()
 
 adata1.obs['Dataset'] = 'HTAPP'
 adata2.obs['Dataset'] = 'HTABU'
+adata3.obs['Dataset'] = 'HTAMSK'
 
-adata = adata1.concatenate(adata2, batch_key='batch')
+adata = adata1.concatenate(adata2, adata3, batch_key='batch')
+
 ```
 
 #### 关于这个concatenate，有一个index_unique=None参数，意思是不希望在合并的索引中添加额外的后缀来保持唯一性，我建议别设置，因为后续的R读进来会可能报错，爆出一堆barcode,还有个
@@ -128,6 +136,22 @@ def remove_batch_suffix(name):
     return re.sub(r'-\d+$', '', name)
 
 adata.obs_names = [remove_batch_suffix(name) for name in adata.obs_names]
+```
+
+### 去除重复的行名
+``` python
+import pandas as pd
+
+# 假设 adata.obs 的行名可能存在重复
+# 检查重复的行名
+duplicates = adata.obs.index.duplicated(keep=False)
+if duplicates.any():
+    print(f"Found duplicated row names: {adata.obs.index[duplicates]}")
+    # 创建新的行名，例如，通过添加一个后缀来使其唯一
+    new_index = pd.Index([name if not dup else f"{name}_{i}" 
+                          for i, (name, dup) in enumerate(zip(adata.obs.index, duplicates))], 
+                         name=adata.obs.index.name)
+    adata.obs.index = new_index
 ```
 
 
@@ -303,11 +327,12 @@ sc.tl.umap(adata)
 
 ### 然后cellhint整合，去批次,可视化
 ```
+import cellhint
 cellhint.integrate(adata, 'Dataset', 'predicted_labels')
 
 sc.tl.umap(adata)
 
-sc.pl.umap(adata, color='predicted_labels', save='cellhint_test.png')
+sc.pl.umap(adata, color='predicted_labels', save='cellhint.png')
 ```
 
 ####这样你就能看到漂亮的umap分群了，adata也就是我们想要的大型单细胞图谱，我这么整合会有22万个细胞，还是很恐怖的
