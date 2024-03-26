@@ -1,6 +1,6 @@
 # 废话不多说
 
-## （假设model中是ENSEMBL格式，adata1中是SYMBOL）
+## （假设需要的是ENSEMBL格式，adata1中是SYMBOL）
 ``` python
 import mygene  #没有就conda装一下
 mg = mygene.MyGeneInfo()
@@ -21,7 +21,7 @@ for result in query_results:
             symbol_to_ensembl[result['query']] = ensembl_id
 adata1.var_names = [symbol_to_ensembl.get(gene, gene) for gene in adata1.var_names]
 ```
-### （假设model中是SYMBOL格式，adata1中是ENSEMBL）
+### （假设需要的是是SYMBOL格式，adata1中是ENSEMBL）
 ``` python
 import mygene
 mg = mygene.MyGeneInfo()
