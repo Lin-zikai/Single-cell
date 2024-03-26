@@ -45,6 +45,28 @@ del adata3.raw
 ```
 > [!Caution]
 > 注意单细胞文件要被sc.pp.normalize_total和sc.pp.log1p，并且adata.X不能有NA值
+
+### 如果adata1.X有缺失，我建议找出最小值，加回去，以此来避免adata1.X不能有确实，如果单纯使用sc.pp.log1p(adata1)可能还是会有缺失，因为他只是默认x+1
+``` python
+import numpy as np
+from scipy.sparse import issparse
+
+if issparse(adata1.X):
+    min_value = adata1.X.data.min()
+else:
+    min_value = adata1.X.min()
+
+c = abs(min_value) + 1 if min_value < -1 else 0
+
+if issparse(adata1.X):
+    adata1.X.data += c  # 只调整非零元素
+    adata1.X.data = np.log1p(adata1.X.data) 
+else:
+    adata1.X += c  
+    adata1.X = np.log1p(adata1.X)  
+```
+
+### 执行标准化，前面执行了log1p这里就不用跑了
 ``` python
 sc.pp.normalize_total(adata1, target_sum=1e4)
 sc.pp.log1p(adata1)
