@@ -92,7 +92,7 @@ for result in query_results:
             symbol_to_ensembl[result['query']] = ensembl_id
 adata1.var_names = [symbol_to_ensembl.get(gene, gene) for gene in adata1.var_names]
 ```
-> （假设model中是ENSEMBL格式，adata1中是SYMBOL）
+### （假设model中是ENSEMBL格式，adata1中是SYMBOL）
 ``` python
 import mygene
 mg = mygene.MyGeneInfo()
