@@ -70,7 +70,8 @@ pd.crosstab(adata.obs.cell_type, adata.obs.majority_voting).loc[['Microglia','Ma
 我个人认为对于新的数据集还是不要打开吧，选择最优注释。
 
 >  [!Caution]
-> 有一点要注意的是，注意adata.var_name，及基因名是ENSEMBL还是SYMBOL的，要与model中的feature格式对应，我给出转换代码（假设model中是ENSEMBL格式，adata1中是SYMBOL）
+> 有一点要注意的是，注意adata.var_name，及基因名是ENSEMBL还是SYMBOL的，要与model中的feature格式对应，我给出转换代码
+> （假设model中是ENSEMBL格式，adata1中是SYMBOL）
 ``` python
 import mygene  #没有就conda装一下
 mg = mygene.MyGeneInfo()
@@ -90,6 +91,27 @@ for result in query_results:
         if ensembl_id:
             symbol_to_ensembl[result['query']] = ensembl_id
 adata1.var_names = [symbol_to_ensembl.get(gene, gene) for gene in adata1.var_names]
+```
+> （假设model中是ENSEMBL格式，adata1中是SYMBOL）
+``` python
+import mygene
+mg = mygene.MyGeneInfo()
+
+# 假设 adata1.var_names 包含了 ENSEMBL IDs
+ensembl_ids = adata1.var_names.tolist()
+
+# 使用 mygene.querymany 查询基因符号
+query_results = mg.querymany(ensembl_ids, scopes='ensembl.gene', fields='symbol', species='human')
+
+# 创建从 ENSEMBL ID 到基因符号的映射
+ensembl_to_symbol = {}
+for result in query_results:
+    if 'symbol' in result:
+        symbol = result['symbol']
+        ensembl_to_symbol[result['query']] = symbol
+
+# 更新 adata1.var_names，如果没有找到对应的基因符号则保留 ENSEMBL ID
+adata1.var_names = [ensembl_to_symbol.get(ensembl_id, ensembl_id) for ensembl_id in adata1.var_names]
 ```
 
 ### 给原本的adata添加注释结果
